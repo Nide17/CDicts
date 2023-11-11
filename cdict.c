@@ -83,6 +83,10 @@ static unsigned int _CD_hash(CDictKeyType str, unsigned int capacity)
  */
 static void _CD_rehash(CDict dict)
 {
+
+  if (dict == NULL)
+    return;
+
   // allocate new slot array
   struct _hash_slot *new_slot = malloc(sizeof(struct _hash_slot) * dict->capacity * 2);
 
@@ -149,6 +153,10 @@ void CD_free(CDict dict)
 // documented in .h file
 unsigned int CD_size(CDict dict)
 {
+
+  if (dict == NULL)
+    return 0;
+
 #ifdef DEBUG
   // iterate across slots, counting number of keys found
   int used = 0;
@@ -198,6 +206,10 @@ bool CD_contains(CDict dict, CDictKeyType key)
 // Documented in .h file
 void CD_store(CDict dict, CDictKeyType key, CDictValueType value)
 {
+
+  if (dict == NULL || key == NULL)
+    return;
+
   assert(dict);
   assert(key);
 
@@ -228,6 +240,9 @@ void CD_store(CDict dict, CDictKeyType key, CDictValueType value)
 // Documented in .h file
 CDictValueType CD_retrieve(CDict dict, CDictKeyType key)
 {
+  if (dict == NULL || key == NULL)
+    return INVALID_VALUE;
+
   assert(dict);
   assert(key);
 
@@ -247,6 +262,9 @@ CDictValueType CD_retrieve(CDict dict, CDictKeyType key)
 // Documented in .h file
 void CD_delete(CDict dict, CDictKeyType key)
 {
+  if (dict == NULL || key == NULL)
+    return;
+
   assert(dict);
   assert(key);
 
@@ -271,6 +289,9 @@ void CD_delete(CDict dict, CDictKeyType key)
 // Documented in .h file
 double CD_load_factor(CDict dict)
 {
+  if (dict == NULL)
+    return 0;
+
   assert(dict);
 
   // load factor = (num_stored + num_deleted) / capacity
@@ -280,6 +301,9 @@ double CD_load_factor(CDict dict)
 // Documented in .h file
 void CD_print(CDict dict)
 {
+  if (dict == NULL)
+    return;
+
   assert(dict);
 
   printf("*** capacity: %d  stored: %d  deleted: %d  load_factor: %.2f\n", dict->capacity, dict->num_stored, dict->num_deleted, CD_load_factor(dict));
@@ -299,6 +323,9 @@ void CD_print(CDict dict)
 
 void CD_foreach(CDict dict, CD_foreach_callback callback, void *cb_data)
 {
+  if (dict == NULL || callback == NULL)
+    return;
+
   assert(dict);
 
   for (int i = 0; i < dict->capacity; i++)
