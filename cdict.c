@@ -47,7 +47,10 @@ CDict CD_new()
   CDict dict = (CDict)malloc(sizeof(struct _dictionary));
 
   if (dict == NULL)
+  {
+    printf("Error: memory allocation failed for dictionary\n");
     return NULL;
+  }
 
   dict->num_stored = 0;
   dict->num_deleted = 0;
@@ -57,6 +60,7 @@ CDict CD_new()
 
   if (dict->slot == NULL)
   {
+    printf("Error: memory allocation failed for dictionary slot\n");
     CD_free(dict);
     return NULL;
   }
@@ -123,7 +127,10 @@ static unsigned int _CD_hash(CDictKeyType str, unsigned int capacity)
 static void _CD_rehash(CDict dict)
 {
   if (dict == NULL)
+  {
+    printf("Error: cannot rehash NULL dictionary\n");
     return;
+  }
 
   unsigned int new_capacity = dict->capacity * 2;
   unsigned int new_num_stored = 0;
@@ -131,15 +138,14 @@ static void _CD_rehash(CDict dict)
 
   if (new_slot == NULL)
   {
+    printf("Error: memory allocation failed for new dictionary slot\n");
     CD_free(dict);
     return;
   }
 
   // Initialize the new slots
   for (unsigned int i = 0; i < new_capacity; i++)
-  {
     new_slot[i].status = SLOT_UNUSED;
-  }
 
   for (unsigned int i = 0; i < dict->capacity; i++)
   {
@@ -190,7 +196,10 @@ unsigned int CD_size(CDict dict)
 unsigned int CD_capacity(CDict dict)
 {
   if (dict == NULL)
+  {
+    printf("Error: cannot get capacity of NULL dictionary\n");
     return 0;
+  }
 
   return dict->capacity;
 }
@@ -221,7 +230,10 @@ bool CD_contains(CDict dict, CDictKeyType key)
 void CD_store(CDict dict, CDictKeyType key, CDictValueType value)
 {
   if (dict == NULL || key == NULL)
+  {
+    printf("Error: cannot store in NULL dictionary\n");
     return;
+  }
 
   // Check if rehashing is needed before storing
   if (CD_load_factor(dict) > REHASH_THRESHOLD)
@@ -231,23 +243,13 @@ void CD_store(CDict dict, CDictKeyType key, CDictValueType value)
   unsigned int hash = _CD_hash(key, dict->capacity);
 
   // Check for collisions and deleted slots
-  while (dict->slot[hash].status == SLOT_IN_USE && strcmp(dict->slot[hash].key, key) != 0)
+  while ((dict->slot[hash].status == SLOT_IN_USE && strcmp(dict->slot[hash].key, key) != 0) ||
+         dict->slot[hash].status == SLOT_DELETED)
     hash = (hash + 1) % dict->capacity;
 
   if (dict->slot[hash].status == SLOT_IN_USE && strcmp(dict->slot[hash].key, key) == 0)
   {
     dict->slot[hash].value = value;
-    return;
-  }
-
-  // Found a deleted slot, insert here
-  else if (dict->slot[hash].status == SLOT_DELETED)
-  {
-    dict->slot[hash].status = SLOT_IN_USE;
-    dict->slot[hash].key = key;
-    dict->slot[hash].value = value;
-    dict->num_stored++;
-    dict->num_deleted--;
     return;
   }
 
@@ -266,7 +268,10 @@ void CD_store(CDict dict, CDictKeyType key, CDictValueType value)
 CDictValueType CD_retrieve(CDict dict, CDictKeyType key)
 {
   if (dict == NULL || key == NULL)
+  {
+    printf("Error: cannot retrieve from NULL dictionary\n");
     return INVALID_VALUE;
+  }
 
   unsigned int hash = _CD_hash(key, dict->capacity);
 
@@ -288,7 +293,10 @@ CDictValueType CD_retrieve(CDict dict, CDictKeyType key)
 void CD_delete(CDict dict, CDictKeyType key)
 {
   if (dict == NULL || key == NULL)
+  {
+    printf("Error: cannot delete from NULL dictionary\n");
     return;
+  }
 
   unsigned int hash = _CD_hash(key, dict->capacity);
 
@@ -313,7 +321,10 @@ void CD_delete(CDict dict, CDictKeyType key)
 double CD_load_factor(CDict dict)
 {
   if (dict == NULL)
+  {
+    printf("Error: cannot get load factor of NULL dictionary\n");
     return 0;
+  }
 
   return (double)(dict->num_stored + dict->num_deleted) / dict->capacity;
 }
@@ -322,7 +333,10 @@ double CD_load_factor(CDict dict)
 void CD_print(CDict dict)
 {
   if (dict == NULL)
+  {
+    printf("Error: cannot print NULL dictionary\n");
     return;
+  }
 
   printf("\n\n");
   printf("*** capacity: %u stored: %u deleted: %u load_factor: %.2f\n",
@@ -347,7 +361,10 @@ void CD_print(CDict dict)
 void CD_foreach(CDict dict, CD_foreach_callback callback, void *cb_data)
 {
   if (dict == NULL || callback == NULL)
+  {
+    printf("Error: cannot iterate over NULL dictionary\n");
     return;
+  }
 
   for (unsigned int i = 0; i < dict->capacity; i++)
     if (dict->slot[i].status == SLOT_IN_USE)
