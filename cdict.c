@@ -45,7 +45,7 @@ struct _dictionary
 CDict CD_new()
 {
   CDict dict = (CDict)malloc(sizeof(struct _dictionary));
-  // assert(dict);
+
   if (dict == NULL)
     return NULL;
 
@@ -57,7 +57,7 @@ CDict CD_new()
 
   if (dict->slot == NULL)
   {
-    free(dict);
+    CD_free(dict);
     return NULL;
   }
 
@@ -73,7 +73,9 @@ void CD_free(CDict dict)
 {
   if (dict)
   {
-    free(dict->slot);
+    if (dict->slot)
+      free(dict->slot);
+
     free(dict);
   }
 }
@@ -128,18 +130,22 @@ static void _CD_rehash(CDict dict)
   struct _hash_slot *new_slot = malloc(sizeof(struct _hash_slot) * new_capacity);
 
   if (new_slot == NULL)
+  {
+    CD_free(dict);
     return;
+  }
 
   // Initialize the new slots
   for (unsigned int i = 0; i < new_capacity; i++)
+  {
     new_slot[i].status = SLOT_UNUSED;
+  }
 
-  // CD_store the old slots into the new slots
   for (unsigned int i = 0; i < dict->capacity; i++)
   {
     if (dict->slot[i].status == SLOT_IN_USE)
     {
-      unsigned int hash = _CD_hash(dict->slot[i].key, new_capacity);
+      unsigned int hash = _CD_hash(dict->slot[i].key, new_capacity); // avoid same hash ON NEW CAPACITY
 
       while (new_slot[hash].status == SLOT_IN_USE)
         hash = (hash + 1) % new_capacity;
@@ -160,7 +166,7 @@ static void _CD_rehash(CDict dict)
   dict->num_deleted = 0;
 }
 
-// documented in .h file
+// Documented in .h file
 unsigned int CD_size(CDict dict)
 {
 #ifdef DEBUG
@@ -180,7 +186,7 @@ unsigned int CD_size(CDict dict)
   return dict->num_stored;
 }
 
-// documented in .h file
+// Documented in .h file
 unsigned int CD_capacity(CDict dict)
 {
   if (dict == NULL)
@@ -231,10 +237,6 @@ void CD_store(CDict dict, CDictKeyType key, CDictValueType value)
   if (dict->slot[hash].status == SLOT_IN_USE && strcmp(dict->slot[hash].key, key) == 0)
   {
     dict->slot[hash].value = value;
-    printf("Key Overwritten: %s - %s Value: %s\n", key, dict->slot[hash].key, value);
-    printf("Stored: %d\n", dict->num_stored);
-    printf("Deleted: %d\n", dict->num_deleted);
-    printf("Capacity: %d\n\n", dict->capacity);
     return;
   }
 
@@ -246,11 +248,6 @@ void CD_store(CDict dict, CDictKeyType key, CDictValueType value)
     dict->slot[hash].value = value;
     dict->num_stored++;
     dict->num_deleted--;
-
-    printf("Key: %s Value: %s\n", key, value);
-    printf("Stored: %d\n", dict->num_stored);
-    printf("Deleted: %d\n", dict->num_deleted);
-    printf("Capacity: %d\n\n", dict->capacity);
     return;
   }
 
@@ -261,11 +258,6 @@ void CD_store(CDict dict, CDictKeyType key, CDictValueType value)
     dict->slot[hash].key = key;
     dict->slot[hash].value = value;
     dict->num_stored++;
-
-    printf("Key: %s Value: %s\n", key, value);
-    printf("Stored: %d\n", dict->num_stored);
-    printf("Deleted: %d\n", dict->num_deleted);
-    printf("Capacity: %d\n\n", dict->capacity);
     return;
   }
 }

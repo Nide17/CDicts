@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
-#include<stdlib.h>
+#include <stdlib.h>
 
 #include "cdict.h"
 
@@ -24,7 +24,7 @@
     }                                                              \
   }
 
-    typedef struct
+typedef struct
 {
   const char *city;
   const char *team;
@@ -186,13 +186,30 @@ int demonstrate_dict()
   printf("The Arizona team is called the %s\n", CD_retrieve(dict, "Arizona"));
   CD_retrieve(dict, "New York");
   printf("The New York team is called the %s\n", CD_retrieve(dict, "New York"));
+  
   CD_print(dict);
 
   CD_store(dict, "New York", "Knicks");
   CD_store(dict, "Pickerington", "Tigers");
   CD_store(dict, "Pickerington", "Panthers");
   CD_store(dict, "Pitsburgh", "Penguins");
+  CD_store(dict, "Pitsburgh", "Steelers");
+  CD_store(dict, "Washington", "Capitals");
+  CD_store(dict, "Okalahoma City", "Thunder");
+  CD_store(dict, "Portland", "Trail Blazers");
+  CD_store(dict, "Sacramento", "Kings");
+  CD_store(dict, "San Antonio", "Spurs");
+  CD_store(dict, "Toronto", "Raptors");
+  CD_store(dict, "Utah", "Jazz");
+  CD_store(dict, "Washington", "Wizards");
+  CD_store(dict, "Brooklyn", "Nets");
+  CD_store(dict, "Charlotte", "Hornets");
+  CD_store(dict, "Chicago", "Bulls");
+  CD_delete(dict, "Utah");
+  CD_delete(dict, "Washington");
+  CD_store(dict, "Cleveland", "Cavaliers");
 
+  CD_print(dict);
   CD_free(dict);
 
   return 1;
@@ -283,21 +300,20 @@ int test_error_cases()
   test_assert(CD_contains(dict, "Denver") == false);
 
   // Test dictionary undergoing rehashing
-  printf("\n\nAdding 10 elements to force rehashing:\n");
-  char *key = malloc(20);
-  char *value = malloc(20);
-  for (int i = 0; i < 10; i++)
-  {
-    sprintf(key, "Key%d-Weird", i);
-    sprintf(value, "Value%d-Weird", i);
-    CD_store(dict, key, value);
-  }
+  printf("\n\nAdding 100 elements to force rehashing:\n");
+  char key[100][20];
+  char value[100][20];
 
-  printf("After adding 10 elements:\n");
-  CD_print(dict);  
+  for (int i = 0; i < 100; i++)
+  {
+    snprintf(key[i], 20, "Key%d-Weird", i);
+    snprintf(value[i], 20, "Value%d-Weird", i);
+    CD_store(dict, key[i], value[i]);
+  }
+  printf("After adding 100 elements:\n\n");
+  CD_print(dict);
+  
   CD_free(dict);
-  free(key);
-  free(value);
   return 1;
 
 test_error:
